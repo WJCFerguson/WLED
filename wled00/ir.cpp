@@ -73,19 +73,59 @@ void decBrightness()
 //IR codes themselves can be defined directly after "case" or in "ir_codes.h"
 bool decodeIRCustom(uint32_t code)
 {
+  // This is configured to share a Squeezebox remote with a headless player
+  // (e.g. PiCorePlayer), where a lot of the keys are unused, but it must avoid
+  // using the play/pause/volume keys to leave these for the Squeezebox.
+
   switch (code)
   {
-    //just examples, feel free to modify or remove
-    case IRCUSTOM_ONOFF : toggleOnOff(); break;
-    case IRCUSTOM_MACRO1 : applyPreset(1); break;
-
-    default: return false;
+    // Bottom row is: | dimmer | on/off | brighter |
+    case IR_SQUEEZEBOX_NOW_PLAYING: decBrightness(); break;
+    case IR_SQUEEZEBOX_SIZE: toggleOnOff();          break;
+    case IR_SQUEEZEBOX_BRIGHTNESS: incBrightness();  break;
+    // Numbers select presets
+    case IR_SQUEEZEBOX_1: applyPreset(1);  break;
+    case IR_SQUEEZEBOX_2: applyPreset(2);  break;
+    case IR_SQUEEZEBOX_3: applyPreset(3);  break;
+    case IR_SQUEEZEBOX_4: applyPreset(4);  break;
+    case IR_SQUEEZEBOX_5: applyPreset(5);  break;
+    case IR_SQUEEZEBOX_6: applyPreset(6);  break;
+    case IR_SQUEEZEBOX_7: applyPreset(7);  break;
+    case IR_SQUEEZEBOX_8: applyPreset(8);  break;
+    case IR_SQUEEZEBOX_9: applyPreset(9);  break;
+    case IR_SQUEEZEBOX_0: applyPreset(10); break;
+    // The four-way for speed & intensity
+    case IR_SQUEEZEBOX_ARROW_UP:   changeEffectSpeed( 16); break;
+    case IR_SQUEEZEBOX_ARROW_DOWN: changeEffectSpeed(-16); break;
+    case IR_SQUEEZEBOX_ARROW_RIGHT: changeEffectIntensity( 16); break;
+    case IR_SQUEEZEBOX_ARROW_LEFT:  changeEffectIntensity(-16); break;
+    // Some fixed brightness offsets on the 2nd from bottom row.
+    case IR_SQUEEZEBOX_BROWSE: bri = bri == 43 ? 20 : 43; break;
+    case IR_SQUEEZEBOX_SHUFFLE: bri = 72; break;
+    case IR_SQUEEZEBOX_REPEAT: bri = bri == 119 ? 198 : 119; break;
+    default:
+      return false;
   }
-  if (code != IRCUSTOM_MACRO1) colorUpdated(NOTIFIER_CALL_MODE_BUTTON); //don't update color again if we apply macro, it already does it
+
+  switch (code)
+  {
+    case IR_SQUEEZEBOX_1:
+    case IR_SQUEEZEBOX_2:
+    case IR_SQUEEZEBOX_3:
+    case IR_SQUEEZEBOX_4:
+    case IR_SQUEEZEBOX_5:
+    case IR_SQUEEZEBOX_6:
+    case IR_SQUEEZEBOX_7:
+    case IR_SQUEEZEBOX_8:
+    case IR_SQUEEZEBOX_9:
+    case IR_SQUEEZEBOX_0:
+      break;
+    default:
+      colorUpdated(NOTIFIER_CALL_MODE_BUTTON);
+  }
+
   return true;
 }
-
-
 
 void relativeChange(byte* property, int8_t amount, byte lowerBoundary, byte higherBoundary)
 {
