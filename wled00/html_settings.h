@@ -226,7 +226,8 @@ On/Off button enabled: <input type="checkbox" name="BT"><br>Infrared remote:
 40-key blue</option><option value="4">44-key RGB</option><option value="5">
 21-key RGB</option><option value="6">6-key black</option><option value="7">
 9-key red</option><option value="8">24-key alternate</option><option value="9">
-Custom</option></select><br><a 
+Custom</option><option value="10">Squeezebox</option><option value="11">
+Roku Express</option></select><br><a 
 href="https://github.com/Aircoookie/WLED/wiki/Infrared-Control" target="_blank">
 IR info</a><h3>WLED Broadcast</h3>UDP Port: <input name="UP" type="number" 
 min="1" max="65535" class="d5" required><br>2nd Port: <input name="U2" 

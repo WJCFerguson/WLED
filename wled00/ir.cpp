@@ -692,6 +692,53 @@ const KeyMap Custom_Actions[] = {
     {},
 };
 
+
+const KeyMap Squeezebox_Actions[] = {
+  {IR_SQUEEZEBOX_NOW_PLAYING, Action_Bright_Down},
+  {IR_SQUEEZEBOX_SIZE, Action_PowerToggle},
+  {IR_SQUEEZEBOX_BRIGHTNESS, Action_Bright_Up},
+
+  {IR_SQUEEZEBOX_1, Action_Preset_1},
+  {IR_SQUEEZEBOX_2, Action_Preset_2},
+  {IR_SQUEEZEBOX_3, Action_Preset_3},
+  {IR_SQUEEZEBOX_4, Action_Preset_4},
+  {IR_SQUEEZEBOX_5, Action_Preset_5},
+  {IR_SQUEEZEBOX_6, Action_Preset_6},
+  {IR_SQUEEZEBOX_7, Action_Preset_7},
+  {IR_SQUEEZEBOX_8, Action_Preset_8},
+  {IR_SQUEEZEBOX_9, Action_Preset_9},
+  {IR_SQUEEZEBOX_0, Action_Preset_10},
+
+  {IR_SQUEEZEBOX_ARROW_DOWN, Action_Speed_Down},
+  {IR_SQUEEZEBOX_ARROW_UP, Action_Speed_Up},
+  {IR_SQUEEZEBOX_ARROW_LEFT, Action_Intensity_Down},
+  {IR_SQUEEZEBOX_ARROW_RIGHT, Action_Intensity_Up},
+
+  {IR_SQUEEZEBOX_BROWSE, Action_Bright_25},
+  {IR_SQUEEZEBOX_SHUFFLE, Action_Bright_50},
+  {IR_SQUEEZEBOX_REPEAT, Action_Bright_75},
+  {},                           // IMPORTANT: must end with null entry
+};
+
+const KeyMap Roku_Express_Actions[] = {
+  {IR_ROKU_BACK, Action_PowerOff},
+  {IR_ROKU_HOME, Action_PowerOn},
+  {IR_ROKU_UP, Action_Bright_Up},
+  {IR_ROKU_DOWN, Action_Bright_Down},
+  {IR_ROKU_RIGHT, Action_Speed_Up},
+  {IR_ROKU_LEFT, Action_Speed_Down},
+  {IR_ROKU_REDO, Action_Intensity_Down},
+  {IR_ROKU_STAR, Action_Intensity_Up},
+  {IR_ROKU_REWIND, Action_Preset_1},
+  {IR_ROKU_PLAY, Action_Preset_2},
+  {IR_ROKU_FFD, Action_Preset_3},
+  {IR_ROKU_NETFLIX, Action_Preset_4},
+  {IR_ROKU_ESPN, Action_Preset_5},
+  {IR_ROKU_HULU, Action_Preset_6},
+  {IR_ROKU_SLING, Action_Preset_7},
+  {},                           // IMPORTANT: must end with null entry
+};
+
 // =============================================================================
 // ============================== IR code Handling =============================
 // =============================================================================
@@ -709,6 +756,8 @@ enum RemoteType {
   Remote_IR9,
   Remote_IR24,
   Remote_Custom,                // special case user-defined
+  Remote_Squeezebox,
+  Remote_Roku_Express,
 
   // All remotes configurable from the UI must be above this item:
   ConfigurableRemoteCount,
@@ -727,6 +776,8 @@ const KeyMap* buttonActions[ConfigurableRemoteCount] = {
   IR9_Actions,
   IR24_Actions,
   Custom_Actions,
+  Squeezebox_Actions,
+  Roku_Express_Actions,
 };
 
 
