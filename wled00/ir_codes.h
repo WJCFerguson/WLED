@@ -238,12 +238,3 @@
 #define COLOR2_NEUTRALWHITE  0xFF000000
 #define COLOR2_COLDWHITE     0xFF7F7F7F
 #define COLOR2_COLDWHITE2    0xFFFFFFFF
-
-#define ACTION_NONE             0
-#define ACTION_BRIGHT_UP        1
-#define ACTION_BRIGHT_DOWN      2
-#define ACTION_SPEED_UP         3
-#define ACTION_SPEED_DOWN       4
-#define ACTION_INTENSITY_UP     5
-#define ACTION_INTENSITY_DOWN   6
-#define ACTION_POWER            7

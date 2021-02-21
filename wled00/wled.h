@@ -47,7 +47,7 @@
 // filesystem specific debugging
 //#define WLED_DEBUG_FS
 
-// Library inclusions. 
+// Library inclusions.
 #include <Arduino.h>
 #ifdef ESP8266
   #include <ESP8266WiFi.h>
@@ -199,7 +199,7 @@ WLED_GLOBAL int8_t irPin _INIT(-1);
 WLED_GLOBAL int8_t irPin _INIT(IRPIN);
 #endif
 
-//WLED_GLOBAL byte presetToApply _INIT(0); 
+//WLED_GLOBAL byte presetToApply _INIT(0);
 
 WLED_GLOBAL char ntpServerName[33] _INIT("0.wled.pool.ntp.org");   // NTP server to use
 
@@ -220,7 +220,7 @@ WLED_GLOBAL bool noWifiSleep _INIT(false);                         // disabling 
     WLED_GLOBAL int ethernetType _INIT(WLED_ETH_DEFAULT);          // ethernet board type
   #else
     WLED_GLOBAL int ethernetType _INIT(WLED_ETH_NONE);             // use none for ethernet board type if default not defined
-  #endif               
+  #endif
 #endif
 
 // LED CONFIG
@@ -553,7 +553,7 @@ WLED_GLOBAL bool e131NewData _INIT(false);
 // led fx library object
 WLED_GLOBAL BusManager busses _INIT(BusManager());
 WLED_GLOBAL WS2812FX strip _INIT(WS2812FX());
-WLED_GLOBAL BusConfig* busConfigs[WLED_MAX_BUSSES] _INIT({nullptr}); //temporary, to remember values from network callback until after 
+WLED_GLOBAL BusConfig* busConfigs[WLED_MAX_BUSSES] _INIT({nullptr}); //temporary, to remember values from network callback until after
 WLED_GLOBAL bool doInitBusses _INIT(false);
 
 // Usermod manager

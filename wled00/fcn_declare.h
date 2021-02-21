@@ -35,7 +35,6 @@ void serializeConfigSec();
 void colorFromUint32(uint32_t in, bool secondary = false);
 void colorFromUint24(uint32_t in, bool secondary = false);
 uint32_t colorFromRgbw(byte* rgbw);
-void relativeChangeWhite(int8_t amount, byte lowerBoundary = 0);
 void colorHStoRGB(uint16_t hue, byte sat, byte* rgb); //hue, sat to rgb
 void colorKtoRGB(uint16_t kelvin, byte* rgb);
 void colorCTtoRGB(uint16_t mired, byte* rgb); //white spectrum to rgb
@@ -72,22 +71,8 @@ void sendHuePoll();
 void onHueData(void* arg, AsyncClient* client, void *data, size_t len);
 
 //ir.cpp
-bool decodeIRCustom(uint32_t code);
-void applyRepeatActions();
-void relativeChange(byte* property, int8_t amount, byte lowerBoundary = 0, byte higherBoundary = 0xFF);
 void changeEffectSpeed(int8_t amount);
 void changeEffectIntensity(int8_t amount);
-void decodeIR(uint32_t code);
-void decodeIR24(uint32_t code);
-void decodeIR24OLD(uint32_t code);
-void decodeIR24CT(uint32_t code);
-void decodeIR40(uint32_t code);
-void decodeIR44(uint32_t code);
-void decodeIR21(uint32_t code);
-void decodeIR6(uint32_t code);
-void decodeIR9(uint32_t code);
-
-void initIR();
 void handleIR();
 
 //json.cpp
@@ -107,7 +92,12 @@ bool serveLiveLeds(AsyncWebServerRequest* request, uint32_t wsClient = 0);
 //led.cpp
 void setValuesFromMainSeg();
 void resetTimebase();
+void powerOn();
+void powerOff();
 void toggleOnOff();
+void powerOnWhite();
+void powerOffWhite();
+void toggleOnOffWhite();
 void setAllLeds();
 void setLedsStandard();
 bool colorChanged();

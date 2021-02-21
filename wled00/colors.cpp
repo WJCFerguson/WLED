@@ -38,15 +38,6 @@ uint32_t colorFromRgbw(byte* rgbw) {
   return (rgbw[0] << 16) + (rgbw[1] << 8) + rgbw[2] + (rgbw[3] << 24);
 }
 
-//relatively change white brightness, minumum A=5
-void relativeChangeWhite(int8_t amount, byte lowerBoundary)
-{
-  int16_t new_val = (int16_t) col[3] + amount;
-  if (new_val > 0xFF) new_val = 0xFF;
-  else if (new_val < lowerBoundary) new_val = lowerBoundary;
-  col[3] = new_val;
-}
-
 void colorHStoRGB(uint16_t hue, byte sat, byte* rgb) //hue, sat to rgb
 {
   float h = ((float)hue)/65535.0;

@@ -21,19 +21,40 @@ void resetTimebase()
 }
 
 
+void powerOn() {
+  bri = briLast;
+}
+
+void powerOff() {
+  briLast = bri;
+  bri = 0;
+  unloadPlaylist();
+}
+
 void toggleOnOff()
 {
   if (bri == 0)
-  {
-    bri = briLast;
-  } else
-  {
-    briLast = bri;
-    bri = 0;
-    unloadPlaylist();
-  }
+    powerOn();
+  else
+    powerOff();
 }
 
+void powerOnWhite() {
+  col[3] = whiteLast;
+}
+
+void powerOffWhite() {
+  whiteLast = col[3];
+  col[3] = 0;
+}
+
+void toggleOnOffWhite()
+{
+  if (col[3] == 0)
+    powerOnWhite();
+  else
+    powerOffWhite();
+}
 
 //scales the brightness with the briMultiplier factor
 byte scaledBri(byte in)
@@ -88,8 +109,8 @@ void colorUpdated(int callMode)
 {
   //call for notifier -> 0: init 1: direct change 2: button 3: notification 4: nightlight 5: other (No notification)
   //                     6: fx changed 7: hue 8: preset cycle 9: blynk 10: alexa
-  if (callMode != NOTIFIER_CALL_MODE_INIT && 
-      callMode != NOTIFIER_CALL_MODE_DIRECT_CHANGE && 
+  if (callMode != NOTIFIER_CALL_MODE_INIT &&
+      callMode != NOTIFIER_CALL_MODE_DIRECT_CHANGE &&
       callMode != NOTIFIER_CALL_MODE_NO_NOTIFY) strip.applyToAllSelected = true; //if not from JSON api, which directly sets segments
 
   bool someSel = false;
@@ -97,7 +118,7 @@ void colorUpdated(int callMode)
   if (callMode == NOTIFIER_CALL_MODE_NOTIFICATION) {
     someSel = (receiveNotificationBrightness || receiveNotificationColor || receiveNotificationEffects);
   }
-  
+
   //Notifier: apply received FX to selected segments only if actually receiving FX
   if (someSel) strip.applyToAllSelected = receiveNotificationEffects;
 
@@ -113,23 +134,23 @@ void colorUpdated(int callMode)
     if (realtimeTimeout == UINT32_MAX) realtimeTimeout = 0;
     if (isPreset) {isPreset = false;}
         else {currentPreset = -1;}
-        
+
     notify(callMode);
-    
+
     //set flag to update blynk and mqtt
     interfaceUpdateCallMode = callMode;
   } else {
-    if (nightlightActive && !nightlightActiveOld && 
-        callMode != NOTIFIER_CALL_MODE_NOTIFICATION && 
+    if (nightlightActive && !nightlightActiveOld &&
+        callMode != NOTIFIER_CALL_MODE_NOTIFICATION &&
         callMode != NOTIFIER_CALL_MODE_NO_NOTIFY)
     {
-      notify(NOTIFIER_CALL_MODE_NIGHTLIGHT); 
+      notify(NOTIFIER_CALL_MODE_NIGHTLIGHT);
       interfaceUpdateCallMode = NOTIFIER_CALL_MODE_NIGHTLIGHT;
     }
   }
-  
+
   if (!colChanged) return; //following code is for e.g. initiating transitions
-  
+
   if (callMode != NOTIFIER_CALL_MODE_NO_NOTIFY && nightlightActive && (nightlightMode == NL_MODE_FADE || nightlightMode == NL_MODE_COLORFADE))
   {
     briNlT = bri;
@@ -152,7 +173,7 @@ void colorUpdated(int callMode)
 
   //deactivate nightlight if target brightness is reached
   if (bri == nightlightTargetBri && callMode != NOTIFIER_CALL_MODE_NO_NOTIFY && nightlightMode != NL_MODE_SUN) nightlightActive = false;
-  
+
   if (fadeTransition)
   {
     //set correct delay if not using notification delay
@@ -160,7 +181,7 @@ void colorUpdated(int callMode)
     jsonTransitionOnce = false;
     strip.setTransition(transitionDelayTemp);
     if (transitionDelayTemp == 0) {setLedsStandard(); strip.trigger(); return;}
-    
+
     if (transitionActive)
     {
       briOld = briT;
@@ -187,7 +208,7 @@ void updateInterfaces(uint8_t callMode)
     espalexaDevice->setColor(col[0], col[1], col[2]);
   }
   #endif
-  if (callMode != NOTIFIER_CALL_MODE_BLYNK && 
+  if (callMode != NOTIFIER_CALL_MODE_BLYNK &&
       callMode != NOTIFIER_CALL_MODE_NO_NOTIFY) updateBlynk();
   doPublishMqtt = true;
   lastInterfaceUpdate = millis();
@@ -203,7 +224,7 @@ void handleTransitions()
     interfaceUpdateCallMode = 0; //disable
   }
   if (doPublishMqtt) publishMqtt();
-  
+
   if (transitionActive && transitionDelayTemp > 0)
   {
     float tper = (millis() - transitionStartTime)/(float)transitionDelayTemp;
@@ -218,7 +239,7 @@ void handleTransitions()
     if (tper - tperLast < 0.004) return;
     tperLast = tper;
     briT    = briOld   +((bri    - briOld   )*tper);
-    
+
     setAllLeds();
   }
 }
