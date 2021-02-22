@@ -69,6 +69,41 @@ void decBrightness()
 }
 
 
+// Action to apply preset `presetNum`.
+//
+// If no preset `presetNum` is defined then fall back to some default effects.
+// If the action is repeated, increment `presetNum` by `buttonsConfigured`.
+void applyPresetAction(byte presetNum, byte buttonsConfigured = 4) {
+  // effects to use if no presets are defined:
+  static const uint16_t fallbacks[] = {
+    FX_MODE_STATIC,
+    FX_MODE_TWINKLE,
+    FX_MODE_BREATH,
+    FX_MODE_COLORTWINKLE,
+    FX_MODE_RAINBOW_CYCLE,
+    FX_MODE_RAINBOW,
+    FX_MODE_METEOR_SMOOTH,
+    FX_MODE_FIRE_FLICKER,
+    FX_MODE_PALETTE,
+    FX_MODE_TWINKLEFOX,
+  };
+  static const size_t fallback_count = sizeof(fallbacks) / sizeof(uint16_t);
+  static unsigned long presetSelectTime = 0;
+
+  // on double press, apply next group of presets
+  unsigned long sinceLast = millis() - presetSelectTime;
+  if (presetNum == currentPreset && sinceLast > 500 && sinceLast < 20000)
+    presetNum += buttonsConfigured;
+
+  // apply preset, or if it doesn't exist, pick from fallbacks
+  if (!applyPreset(presetNum)) {
+    effectPalette = 0;          // use default palette
+    effectCurrent = fallbacks[(presetNum - 1) % fallback_count];
+  }
+  presetSelectTime = millis();
+}
+
+
 //Add what your custom IR codes should trigger here. Guide: https://github.com/Aircoookie/WLED/wiki/Infrared-Control
 //IR codes themselves can be defined directly after "case" or in "ir_codes.h"
 bool decodeIRCustom(uint32_t code)
@@ -85,7 +120,66 @@ bool decodeIRCustom(uint32_t code)
   return true;
 }
 
+bool decodeSqueezebox(uint32_t code)
+{
+  // This is configured to share a Squeezebox remote with a headless player
+  // (e.g. PiCorePlayer), where a lot of the keys are unused, but it must avoid
+  // using the play/pause/volume keys to leave these for the Squeezebox.
+  switch (code) {
+    // ============================== Squeezebox =============================
+    // Bottom row is: | dimmer | on/off | brighter |
+    case IR_SQUEEZEBOX_NOW_PLAYING: decBrightness(); break;
+    case IR_SQUEEZEBOX_SIZE: toggleOnOff();          break;
+    case IR_SQUEEZEBOX_BRIGHTNESS: incBrightness();  break;
+    // Numbers select presets
+    case IR_SQUEEZEBOX_1: applyPresetAction(1, 10);  break;
+    case IR_SQUEEZEBOX_2: applyPresetAction(2, 10);  break;
+    case IR_SQUEEZEBOX_3: applyPresetAction(3, 10);  break;
+    case IR_SQUEEZEBOX_4: applyPresetAction(4, 10);  break;
+    case IR_SQUEEZEBOX_5: applyPresetAction(5, 10);  break;
+    case IR_SQUEEZEBOX_6: applyPresetAction(6, 10);  break;
+    case IR_SQUEEZEBOX_7: applyPresetAction(7, 10);  break;
+    case IR_SQUEEZEBOX_8: applyPresetAction(8, 10);  break;
+    case IR_SQUEEZEBOX_9: applyPresetAction(9, 10);  break;
+    case IR_SQUEEZEBOX_0: applyPresetAction(10, 10); break;
+    // The four-way for speed & intensity
+    case IR_SQUEEZEBOX_ARROW_UP:   changeEffectSpeed( 16); break;
+    case IR_SQUEEZEBOX_ARROW_DOWN: changeEffectSpeed(-16); break;
+    case IR_SQUEEZEBOX_ARROW_RIGHT: changeEffectIntensity( 16); break;
+    case IR_SQUEEZEBOX_ARROW_LEFT:  changeEffectIntensity(-16); break;
+    // Some fixed brightness offsets on the 2nd from bottom row.
+    case IR_SQUEEZEBOX_BROWSE: bri = bri == 43 ? 20 : 43; break;
+    case IR_SQUEEZEBOX_SHUFFLE: bri = 72; break;
+    case IR_SQUEEZEBOX_REPEAT: bri = bri == 119 ? 198 : 119; break;
+  }
+  colorUpdated(NOTIFIER_CALL_MODE_BUTTON);
+  return true;
+}
 
+
+bool decodeRokuExpress(uint32_t code) {
+  switch (code) {
+    case IR_ROKU_BACK: briLast = bri; bri = 0; break;
+    case IR_ROKU_HOME: bri = briLast; break;
+    case IR_ROKU_UP: incBrightness(); break;
+    case IR_ROKU_DOWN: decBrightness(); break;
+    case IR_ROKU_RIGHT: changeEffectSpeed(16); break;
+    case IR_ROKU_LEFT: changeEffectSpeed(-16); break;
+    case IR_ROKU_REDO: changeEffectIntensity(16); break;
+    case IR_ROKU_STAR: changeEffectIntensity(-16); break;
+    case IR_ROKU_REWIND: applyPresetAction(1, 7); break;
+    case IR_ROKU_PLAY: applyPresetAction(2, 7); break;
+    case IR_ROKU_FFD: applyPresetAction(3, 7); break;
+    case IR_ROKU_NETFLIX: applyPresetAction(4, 7); break;
+    case IR_ROKU_ESPN: applyPresetAction(5, 7); break;
+    case IR_ROKU_HULU: applyPresetAction(6, 7); break;
+    case IR_ROKU_SLING: applyPresetAction(7, 7); break;
+    default:
+      return false;
+  }
+  colorUpdated(NOTIFIER_CALL_MODE_BUTTON);
+  return true;
+}
 
 void relativeChange(byte* property, int8_t amount, byte lowerBoundary, byte higherBoundary)
 {
@@ -153,27 +247,37 @@ void decodeIR(uint32_t code)
     applyRepeatActions();
     return;
   }
-  lastValidCode = 0; irTimesRepeated = 0;
-  if (decodeIRCustom(code)) return;
-  if      (code > 0xFFFFFF) return; //invalid code
-  else if (code > 0xF70000 && code < 0xF80000) decodeIR24(code); //is in 24-key remote range
-  else if (code > 0xFF0000) {
-    switch (irEnabled) {
-      case 1: decodeIR24OLD(code); break;  // white 24-key remote (old) - it sends 0xFF0000 values
-      case 2: decodeIR24CT(code);  break;  // white 24-key remote with CW, WW, CT+ and CT- keys
-      case 3: decodeIR40(code);    break;  // blue  40-key remote with 25%, 50%, 75% and 100% keys
-      case 4: decodeIR44(code);    break;  // white 44-key remote with color-up/down keys and DIY1 to 6 keys 
-      case 5: decodeIR21(code);    break;  // white 21-key remote  
-      case 6: decodeIR6(code);     break;  // black 6-key learning remote defaults: "CH" controls brightness,
-                                           // "VOL +" controls effect, "VOL -" controls colour/palette, "MUTE" 
-                                           // sets bright plain white
-      case 7: decodeIR9(code);    break;
-      default: return;
-    }
+  lastValidCode = 0;
+  irTimesRepeated = 0;
+  if (decodeIRCustom(code)) {
+    return;
   }
-  if (nightlightActive && bri == 0) nightlightActive = false;
-  colorUpdated(NOTIFIER_CALL_MODE_BUTTON); //for notifier, IR is considered a button input
-  //code <= 0xF70000 also invalid
+  // IR24 special case, always checked (for unknown historical reasons?)
+  if (decodeIR24(code)) {
+    return;
+  }
+
+  Serial.println(irEnabled);
+  switch (irEnabled) {
+    case 1: decodeIR24OLD(code); break;  // white 24-key remote (old) - it sends 0xFF0000 values
+    case 2: decodeIR24CT(code);  break;  // white 24-key remote with CW, WW, CT+ and CT- keys
+    case 3: decodeIR40(code);    break;  // blue  40-key remote with 25%, 50%, 75% and 100% keys
+    case 4: decodeIR44(code);    break;  // white 44-key remote with color-up/down keys and DIY1 to 6 keys
+    case 5: decodeIR21(code);    break;  // white 21-key remote
+    case 6: decodeIR6(code);     break;  // black 6-key learning remote defaults: "CH" controls brightness,
+      // "VOL +" controls effect, "VOL -" controls colour/palette, "MUTE"
+                                   // sets bright plain white
+    case 7: decodeIR9(code);    break;
+    case 8: decodeSqueezebox(code); break;
+    case 9: decodeRokuExpress(code); break;
+    default: return;
+  }
+
+  if (nightlightActive && bri == 0)
+    nightlightActive = false;
+
+  // for notifier, IR is considered a button input
+  colorUpdated(NOTIFIER_CALL_MODE_BUTTON);
 }
 
 void applyRepeatActions(){
@@ -222,7 +326,7 @@ void applyRepeatActions(){
 }
 
 
-void decodeIR24(uint32_t code)
+bool decodeIR24(uint32_t code)
 {
   switch (code) {
     case IR24_BRIGHTER  : incBrightness();                  break;
@@ -249,9 +353,11 @@ void decodeIR24(uint32_t code)
     case IR24_STROBE    : if (!applyPreset(2)) effectCurrent = FX_MODE_RAINBOW_CYCLE; break;
     case IR24_FADE      : if (!applyPreset(3)) effectCurrent = FX_MODE_BREATH;        break;
     case IR24_SMOOTH    : if (!applyPreset(4)) effectCurrent = FX_MODE_RAINBOW;       break;
-    default: return;
+    default:
+      return false;
   }
   lastValidCode = code;
+  return true;
 }
 
 void decodeIR24OLD(uint32_t code)
@@ -546,13 +652,10 @@ void handleIR()
       
       if (irrecv->decode(&results))
       {
-        if (results.value != 0) // only print results if anything is received ( != 0 )
-        {
-          Serial.print("IR recv\r\n0x");
-          Serial.println((uint32_t)results.value, HEX);
-          Serial.println();
+        if (results.value != 0) {
+          Serial.printf("IR recv 0x%08X\r\n", (uint32_t)results.value);
+          decodeIR(results.value);
         }
-        decodeIR(results.value);
         irrecv->resume();
       }
     } else if (irrecv != NULL)
