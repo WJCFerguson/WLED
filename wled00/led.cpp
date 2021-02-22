@@ -317,3 +317,27 @@ uint32_t get_millisecond_timer()
 {
   return strip.now;
 }
+
+// adjust the saturation of `col` by `amount`, bound by 0 and 255 limits
+void changeSaturation(int8_t amount) {
+  CRGB fastled_col(col[0], col[1], col[2]);
+  CHSV prim_hsv = rgb2hsv_approximate(fastled_col);
+  prim_hsv.saturation = constrain((int16_t)prim_hsv.saturation + amount, 0, 255);
+  hsv2rgb_rainbow(prim_hsv, fastled_col);
+  col[0] = fastled_col.red;
+  col[1] = fastled_col.green;
+  col[2] = fastled_col.blue;
+}
+
+// adjust the hue of `col` by `amount`, wrapping around at each end
+void changeHue(int8_t amount) {
+  CRGB fastled_col(col[0], col[1], col[2]);
+  CHSV prim_hsv = rgb2hsv_approximate(fastled_col);
+  // The C spec defines that unsigned integer overflow will wrap around, which
+  // is what we want.  250 + 10 = 5; 5 - 10 = 250
+  prim_hsv.hue = prim_hsv.hue + amount;
+  hsv2rgb_rainbow(prim_hsv, fastled_col);
+  col[0] = fastled_col.red;
+  col[1] = fastled_col.green;
+  col[2] = fastled_col.blue;
+}

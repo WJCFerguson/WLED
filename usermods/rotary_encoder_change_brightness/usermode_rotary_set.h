@@ -25,8 +25,6 @@ private:
   unsigned char select_state = 0; // 0 = brightness 1 = color
   unsigned char button_state = HIGH;
   unsigned char prev_button_state = HIGH;
-  CRGB fastled_col;
-  CHSV prim_hsv;
   int16_t new_val;
 
   unsigned char Enc_A;
@@ -107,22 +105,7 @@ public:
               bri += fadeAmount; // increase the brightness, dont go over 255
           }
           else
-          {
-            fastled_col.red = col[0];
-            fastled_col.green = col[1];
-            fastled_col.blue = col[2];
-            prim_hsv = rgb2hsv_approximate(fastled_col);
-            new_val = (int16_t)prim_hsv.h + fadeAmount;
-            if (new_val > 255)
-              new_val -= 255; // roll-over if  bigger than 255
-            if (new_val < 0)
-              new_val += 255; // roll-over if smaller than 0
-            prim_hsv.h = (byte)new_val;
-            hsv2rgb_rainbow(prim_hsv, fastled_col);
-            col[0] = fastled_col.red;
-            col[1] = fastled_col.green;
-            col[2] = fastled_col.blue;
-          }
+            changeHue(fadeAmount);
         }
         else if (Enc_B == LOW)
         { // B is low so counter-clockwise
@@ -132,22 +115,7 @@ public:
               bri -= fadeAmount; // decrease the brightness, dont go below 0
           }
           else
-          {
-            fastled_col.red = col[0];
-            fastled_col.green = col[1];
-            fastled_col.blue = col[2];
-            prim_hsv = rgb2hsv_approximate(fastled_col);
-            new_val = (int16_t)prim_hsv.h - fadeAmount;
-            if (new_val > 255)
-              new_val -= 255; // roll-over if  bigger than 255
-            if (new_val < 0)
-              new_val += 255; // roll-over if smaller than 0
-            prim_hsv.h = (byte)new_val;
-            hsv2rgb_rainbow(prim_hsv, fastled_col);
-            col[0] = fastled_col.red;
-            col[1] = fastled_col.green;
-            col[2] = fastled_col.blue;
-          }
+            changeHue(-fadeAmount);
         }
         //call for notifier -> 0: init 1: direct change 2: button 3: notification 4: nightlight 5: other (No notification)
         // 6: fx changed 7: hue 8: preset cycle 9: blynk 10: alexa

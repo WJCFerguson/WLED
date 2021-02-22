@@ -116,6 +116,8 @@ void updateInterfaces(uint8_t callMode);
 void handleTransitions();
 void handleNightlight();
 byte scaledBri(byte in);
+void changeSaturation(int8_t amount);
+void changeHue(int8_t amount);
 
 //lx_parser.cpp
 bool parseLx(int lxValue, byte* rgbw);

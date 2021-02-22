@@ -100,21 +100,8 @@ void changeEffectSpeed(int8_t amount)
   if (effectCurrent != 0) {
     int16_t new_val = (int16_t) effectSpeed + amount;
     effectSpeed = (byte)constrain(new_val,0.1,255.1);
-  } else {                              // if Effect == "solid Color", change the hue of the primary color
-    CRGB fastled_col;
-    fastled_col.red =   col[0];
-    fastled_col.green = col[1];
-    fastled_col.blue =  col[2];
-    CHSV prim_hsv = rgb2hsv_approximate(fastled_col);
-    int16_t new_val = (int16_t) prim_hsv.h + amount;
-    if (new_val > 255) new_val -= 255;  // roll-over if  bigger than 255
-    if (new_val < 0) new_val += 255;    // roll-over if smaller than 0
-    prim_hsv.h = (byte)new_val;
-    hsv2rgb_rainbow(prim_hsv, fastled_col);
-    col[0] = fastled_col.red; 
-    col[1] = fastled_col.green; 
-    col[2] = fastled_col.blue;
-  }
+  } else
+    changeHue(amount);
 
   if(amount > 0) lastRepeatableAction = ACTION_SPEED_UP;
   if(amount < 0) lastRepeatableAction = ACTION_SPEED_DOWN;
@@ -126,19 +113,8 @@ void changeEffectIntensity(int8_t amount)
   if (effectCurrent != 0) {
     int16_t new_val = (int16_t) effectIntensity + amount;
     effectIntensity = (byte)constrain(new_val,0.1,255.1);
-  } else {                                            // if Effect == "solid Color", change the saturation of the primary color
-    CRGB fastled_col;
-    fastled_col.red =   col[0];
-    fastled_col.green = col[1];
-    fastled_col.blue =  col[2];
-    CHSV prim_hsv = rgb2hsv_approximate(fastled_col);
-    int16_t new_val = (int16_t) prim_hsv.s + amount;
-    prim_hsv.s = (byte)constrain(new_val,0.1,255.1);  // constrain to 0-255
-    hsv2rgb_rainbow(prim_hsv, fastled_col);
-    col[0] = fastled_col.red; 
-    col[1] = fastled_col.green; 
-    col[2] = fastled_col.blue;
-  }
+  } else
+    changeSaturation(amount);
 
   if(amount > 0) lastRepeatableAction = ACTION_INTENSITY_UP;
   if(amount < 0) lastRepeatableAction = ACTION_INTENSITY_DOWN;
