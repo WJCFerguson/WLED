@@ -786,7 +786,9 @@ bool handleSet(AsyncWebServerRequest *request, const String& req, bool apply)
   }
   pos = req.indexOf(F("SP=")); //segment spacing
   if (pos > 0) {
-    spcI = getNumVal(&req, pos);
+    uint8_t val = static_cast<uint8_t>(spcI);
+    updateVal(&req, "SP=", &val, 0, 200);
+    spcI = val;
   }
   selseg.set(startI, stopI, grpI, spcI, UINT16_MAX, startY, stopY);
 
