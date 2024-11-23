@@ -39,9 +39,9 @@ typedef struct WizMoteMessageStructure {
 static uint32_t last_seq = UINT32_MAX;
 static int brightnessBeforeNightMode = NIGHT_MODE_DEACTIVATED;
 
-// Pulled from the IR Remote logic but reduced to 10 steps with a constant of 3
+// JF: hacked to go down to 1
 static const byte brightnessSteps[] = {
-  6, 9, 14, 22, 33, 50, 75, 113, 170, 255
+  1, 2, 3, 5, 7, 11, 16, 24, 35, 52, 78, 116, 172, 255
 };
 static const size_t numBrightnessSteps = sizeof(brightnessSteps) / sizeof(byte);
 
@@ -50,9 +50,14 @@ inline bool nightModeActive() {
 }
 
 static void activateNightMode() {
-  if (nightModeActive()) return;
-  brightnessBeforeNightMode = bri;
-  bri = NIGHT_MODE_BRIGHTNESS;
+  // JF: change remote to turn on fade
+  nightlightActive = !nightlightActive;
+  if (nightlightActive) {
+      nightlightMode = NL_MODE_FADE;
+      nightlightDelayMins = nightlightDelayMinsDefault;
+      nightlightTargetBri = 0;
+  }
+  // bri = NIGHT_MODE_BRIGHTNESS;
   stateUpdated(CALL_MODE_BUTTON);
 }
 
